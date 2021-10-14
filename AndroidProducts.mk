@@ -1,0 +1,2 @@
+PRODUCT_MAKEFILES := \
+     $(LOCAL_DIR)/twrp_E7533.mk
