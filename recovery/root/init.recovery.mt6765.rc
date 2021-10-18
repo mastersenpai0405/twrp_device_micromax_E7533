@@ -1,0 +1,59 @@
+import /trustkernel.rc
+
+on fs
+    install_keyring
+    
+service keystore_auth /system/bin/keystore_auth
+    oneshot
+    user system
+    group root
+    disabled
+    seclabel u:r:recovery:s0
+
+service keystore /system/bin/keystore /tmp/misc/keystore
+    user root
+    group root drmrpc readproc log
+    disabled
+    seclabel u:r:recovery:s0
+
+service gatekeeper-1-0 /vendor/bin/android.hardware.gatekeeper@1.0-service
+    user root
+    group root
+    disabled
+    seclabel u:r:recovery:s0
+
+service keymaster-4-0 /vendor/bin/android.hardware.keymaster@4.0-service.beanpod
+    user root
+    group root drmrpc
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
+    
+on property:hwservicemanager.ready=true
+    start keymaster-4-0
+    start gatekeeper-1-0
+   
+on property:ro.crypto.state=unsupported
+    stop teei_daemon
+    stop keymaster-4-0
+    stop gatekeeper-1-0
+    stop hwservicemanager
+    stop servicemanager
+
+on property:ro.crypto.state=unencrypted
+    stop teei_daemon
+    stop keymaster-4-0
+    stop gatekeeper-1-0
+    stop hwservicemanager
+    stop servicemanager
+
+on property:twrp.decrypt.done=true
+    stop teei_daemon
+    stop keymaster-4-0
+    stop gatekeeper-1-0
+    stop hwservicemanager
+    stop servicemanager
+   
+on boot
+    start health-hal-2-1
+
